@@ -1,0 +1,40 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+
+namespace WindowsFormsApplication1
+{
+    public partial class statistiques : Form
+    {
+        public statistiques()
+        {
+            InitializeComponent();
+            graph_form.ActiveForm.TopLevel = false;
+            graph_form.ActiveForm.Visible = true;
+            graph_form.ActiveForm.FormBorderStyle = FormBorderStyle.None;
+            graph_form.ActiveForm.Dock = DockStyle.Fill;
+            tabControl1.TabPages[0].Controls.Add(graph_form.ActiveForm);
+            this.listView1.Columns.Add("Sum");
+        }
+
+        private void tabPage1_Click(object sender, EventArgs e)
+        {
+
+        }
+        public void addPattern(string name, double sum)
+        {
+             ListViewItem item = new ListViewItem(new string[] { name, sum.ToString() });
+             this.listView1.Items.Add(item);
+        }
+
+        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+    }
+}

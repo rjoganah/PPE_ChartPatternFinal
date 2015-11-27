@@ -1,0 +1,324 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace WindowsFormsApplication1
+{
+
+
+    class detection
+    {
+        public double[,] PatternArray;
+        public List<Data> listOfDatas = new List<Data>();
+        int indexDebut;
+        int indexFin;
+        int size;
+        graph_form graph;
+        
+        public detection(graph_form graph,List<Data> datalist)
+        {
+            PatternArray = new double[10,10]{ 
+    {-1.2234, -1.49996, -1.4136, -1.49996, 1, 1, -1.49996, -1.4136, -1.49996, -1.2234},
+    {-0.9456, -1.0833, -1.0688, -1.0833, 1, 1, -1.0833, -1.0688, -1.0833, -0.9456},
+    {-0.6678, -0.66664, -0.724, -0.6664, 0.7222, 0.7222, -0.6664, -0.724, -0.66664, -0.6678},
+    {-0.389, -0.24998, -0.3792, -0.24998, 0.4444, 0.4444, -0.24998, -0.3792, -0.24998, -0.389},
+    {-0.112, 0.16668, -0.0344, 0.16668, 0.1666, 0.1666, 0.16668, -0.0344, 0.16668, -0.112},
+    {0.1666, 0.58334, 0.3104, 0.58334, -0.112, -0.112, 0.58334, 0.3104, 0.58334, 0.1666},
+    {0.444, 1, 0.6552, 1, -0.389, -0.389, 1, 0.6552, 1, 0.4444},
+    {0.7222, 1, 1, 1, -0.6678, -0.6678, 1, 1, 1, 0.7222},
+    {1, 0.58334, 1, 0.58334, -0.9456, -0.9456, 0.58334, 1, 0.58334, 1},
+    {1, 0.16668, 0.6552, 0.16668, -1.2234,  -1.2234, 0.16668, 0.6552, 0.16668, 1}};
+            listOfDatas = datalist;
+            this.graph = graph;
+            
+
+        }
+
+        public double[,] createPatternFromUser(double[,] matrice)
+        {
+            double u3, u2, u1, poids, d, e;
+            int ligne, colhaut, colbas;
+            double[] valueOfD;
+            double[] valueOfE;
+            double[] valueOfU1;
+            double[] valueOfU2;
+            double[] valueOfU3;
+
+            for (ligne = 0; ligne < 10; ligne++)
+            {
+                valueOfD = new double[10] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                valueOfE = new double[10] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                valueOfU1 = new double[10] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                valueOfU2 = new double[10] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                valueOfU3 = new double[10] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                d = e = u1 = u2 = poids = 0;
+                colhaut = 0;
+
+                while (matrice[colhaut, ligne] != 1 && colhaut != 9)
+                {
+                    d++;
+                    colhaut++;
+                }
+
+                if (matrice[colhaut, ligne] == 1)
+                {
+                    for (int i = 0; i < d; i++)
+                    {
+                        u1 = u1 + i;
+                    }
+                }
+                valueOfD[ligne] = d;
+                valueOfU1[ligne] = u1;
+
+                colbas = 9;
+
+                while (matrice[colbas, ligne] != 1 && colbas != 0)
+                {
+                    e++;
+                    colbas--;
+                }
+                if (matrice[colbas,ligne]==1)
+                {
+                    for (int j = 0; j < e; j++)
+                    {
+                        u2 = u2 + j;
+                    }
+
+                }
+                valueOfE[ligne] = e;
+                valueOfU2[ligne] = u2;
+                valueOfU3[ligne] = valueOfU1[ligne] + valueOfU2[ligne];
+                poids = 10 / valueOfU3[ligne];
+                colhaut = 0;
+                d = valueOfD[ligne];
+
+                while (matrice[colhaut,ligne] !=1 && colhaut !=9)
+                {
+                    matrice[colhaut,ligne] = 1 - poids*d;
+                    if (colhaut != 9)
+                    {
+                        colhaut++;
+                    }
+                    d--;
+                };
+                colbas = 9;
+                e = valueOfE[ligne];
+                while (matrice[colbas,ligne] != 1 && colbas !=0)
+                {
+                    matrice[colbas,ligne] = 1 - poids*e;
+                    if (colbas != 0)
+                    {
+                        colbas--;
+                    }
+                    e--;
+                }
+
+
+            }
+            return matrice;
+        }
+        private static bool test(Data dat)
+        {
+            return true;
+        }
+
+        public List<patternDetected> runDetection(int debut,int interval, double[,] matriceUser, String type)
+        {
+            System.Diagnostics.Debug.Write("BEGIN RUN DETECTION\n");
+            List<patternDetected> patternsDetected = new List<patternDetected>();
+            for (int i = 0; i < 10; i++)
+            {
+                for (int j = 0; j < 10; j++)
+                {
+                    if (j == 0)
+                    {
+                        System.Diagnostics.Debug.Write("\n");
+                        System.Diagnostics.Debug.Write(matriceUser[i, j] + "\t");
+                    }
+                    else
+                        System.Diagnostics.Debug.Write(matriceUser[i,j] + "\t");
+                }
+            }
+            PatternArray = this.createPatternFromUser(matriceUser);
+            double[] f;
+            double[] f2 = new double[10];
+            double[,] k = new double[10,2];
+            double[,] p;
+            double[,] compress3 = new double[10,2];
+            double[,] matrix10x10 = new double[10,10];
+            double inc = 0;
+            double pmax = 0;
+            double pmin = 0;
+            double sum = 0;
+            double maxGlobal = 0;
+            double minGlobal = 0;
+            for (int i = 0; i < 10; i++)
+            {
+                for (int j = 0; j < 10; j++)
+                {
+                    if (j == 0)
+                    {
+                        System.Diagnostics.Debug.WriteLine(PatternArray[i, j]);
+                    }
+                    else
+                    System.Diagnostics.Debug.Write(PatternArray[i,j]);
+                }
+            }
+
+            for (int i = debut; i < listOfDatas.Count - interval; i++)
+            {
+                maxGlobal = 0;
+                minGlobal = 0;
+                indexDebut = i;
+                
+                indexFin = indexDebut + interval;
+                size = indexFin - indexDebut;
+                f = new double[size+1];
+                int indexBoucle = 0;
+
+               
+                for (int l = indexDebut; l < indexFin + 1; l++)
+                {
+                    
+                    f[indexBoucle] = (double)listOfDatas[l].close;
+                    if (indexBoucle < indexFin - 1)
+                    {
+                        indexBoucle++;
+                    }
+                }
+                
+                for (int j = 0; j < 10; j++)
+                {
+                    for (int m = 0; m < 10; m++)
+                    {
+                        matrix10x10[m, j] = 0;
+                    }
+                }
+                for (int j = 0; j < 10; j++)
+                {
+                    compress3[j,1] = 0;
+                    compress3[j,0] = 0;
+                }
+                inc =(double) (indexFin - indexDebut) / 10;
+                p = new double[10, 2];
+                
+                for (int j = 0; j < 10; j++)
+                {
+                    p[j,1] = indexDebut + ((j+1) * inc);
+                    p[j,0] = indexDebut + ((j) * inc);
+                }
+                for (int j = indexDebut; j < indexFin + 1; j++)
+                {
+                    for (int m = 0; m < 10; m++)
+                    {
+                        if (j >= p[m, 0] && j <= p[m, 1])
+                        {
+                            if (j == indexDebut)
+                            {
+                                maxGlobal = listOfDatas[j].close;
+                                minGlobal = listOfDatas[j].close;
+
+                            }
+                            if (listOfDatas[j].close > maxGlobal)
+                            {
+                                maxGlobal = listOfDatas[j].close;
+                            }
+                            if (listOfDatas[j].close < minGlobal)
+                            {
+                                minGlobal = listOfDatas[j].close;
+                            }
+                            compress3[m, 0] = compress3[m, 0] + (double)listOfDatas[j].close;
+                            compress3[m, 1] = compress3[m, 1] + 1;
+                        }
+                    }
+                }
+
+                for (int j = 0; j < 10; j++)
+                {
+                    if (compress3[j, 1] > 0)
+                    {
+                        f2[j] = compress3[j, 0] / compress3[j, 1];
+                    }
+                }
+
+                for (int j = 0; j < 10; j++)
+                {
+                    if (j == 0)
+                    {
+                        pmax = f2[j];
+                        pmin = f2[j];
+                    }
+                    if (f2[j] > pmax)
+                    {
+                        pmax = f2[j];
+                    }
+                    if (f2[j] < pmin)
+                    {
+                        pmin = f2[j];
+                    }
+                }
+                inc = (pmax - pmin) / 10;
+                for (int j = 0; j < 10; j++)
+                {
+                    k[j, 1] = pmin + ((j+1) * inc);
+                    if (i ==0)
+                    System.Diagnostics.Debug.WriteLine(k[j, 1]);
+                    k[j, 0] = pmin + ((j) * inc);
+
+                }
+
+                for (int j = 0; j < 10; j++)
+                {
+                    for (int m = 0; m < 10; m++)
+                    {
+                        if (f2[j] >= k[m, 0] && f2[j] <= k[m, 1])
+                        {
+                            matrix10x10[9-m, j] = 1;
+                            break;
+                        }
+                    }
+                }
+                sum = 0;
+                for (int j = 0; j < 10; j++)
+                {
+                    for (int m = 0; m < 10; m++)
+                    {
+                        sum = sum + (PatternArray[j, m] * matrix10x10[j, m]);
+
+                        if (i==0)
+                        {
+                            System.Diagnostics.Debug.Write(PatternArray[j, m] + "\t");
+                        }
+                        
+
+                    }
+                    if(i==0)
+                    System.Diagnostics.Debug.Write("\n");
+                }
+
+                if (sum > 5)
+                {
+                    patternDetected pat = new patternDetected(this.listOfDatas[this.indexDebut].datehour, this.listOfDatas[this.indexFin].datehour,maxGlobal,minGlobal,interval - 1,sum,type);
+                    patternsDetected.Add(pat);
+                    System.Diagnostics.Debug.Write("Index Début : " + this.indexDebut + "date debut" + this.listOfDatas[this.indexDebut].datehour + " Index FIn : " + this.indexFin);
+                    for (int rouetourne = 0; rouetourne < 10; rouetourne++)
+                    {
+                        System.Diagnostics.Debug.Write(f[rouetourne]);
+                        System.Diagnostics.Debug.Write(" ");
+                        graph.color_interval(indexDebut, indexFin);
+                    }
+                    System.Diagnostics.Debug.WriteLine(" ");
+                    
+                }
+               
+
+
+            }
+            System.Diagnostics.Debug.Write("\nSTOP RUN DETECTION");
+            return patternsDetected;
+
+        }
+
+    }
+}

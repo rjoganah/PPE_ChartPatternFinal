@@ -1,0 +1,480 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.IO;
+using Excel = Microsoft.Office.Interop.Excel;
+using System.Xml.Serialization;
+using System.Threading;
+using System.Globalization;
+
+namespace WindowsFormsApplication1
+{
+   
+    public partial class 
+        Form1 : Form
+    {
+        String typeofpattern = "";
+        string name_file;
+        double min_data_value = 10000;
+        double max_data_value = -1;
+        List<Data> loaded_data = new List<Data>();
+        public static List<patternDetected> patternsDetected = new List<patternDetected>();
+        Excel.Application xlApp;
+        Excel.Range xlRange;
+        Excel.Worksheet xlSheet;
+        Excel.Workbook xlWorkbook;
+        bool ifopenedexcel = false;
+        graph_form graph_live;
+        graph_form testgraph;
+        statistiques stat;
+        double[,] matriceUser;
+        static System.Windows.Forms.Timer myTimer = new System.Windows.Forms.Timer();
+        
+        static int alarmCounter = 1;
+        static bool exitFlag = false;
+
+        // This is the method to run when the timer is raised. 
+        private void TimerEventProcessor(Object myObject,
+                                                EventArgs myEventArgs)
+        {
+            myTimer.Stop();
+
+            // Displays a message box asking whether to continue running the timer.
+            if (alarmCounter < 100000000)
+            {
+                // Restarts the timer and increments the counter.
+                xlWorkbook.RefreshAll();
+                
+                //We add the refreshed data
+                loaded_data.Add(new Data(Double.Parse((String)(xlRange.Cells[17, 2] as Excel.Range).Value.ToString()), DateTime.Now));
+                
+                //We add the new data to the graph
+                graph_live.Graphique_refresh(loaded_data,alarmCounter);
+
+                //We increment the counter
+                alarmCounter += 1;
+                myTimer.Enabled = true;
+                
+            }
+            else
+            {
+                // Stops the timer.
+                exitFlag = true;
+            }
+
+        }
+        
+        public Form1()
+        {
+            //We create the 10x10 matrix
+            System.Threading.Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+            this.matriceUser = new double[10, 10];
+            InitializeComponent();
+        }
+
+        private void sel_stock_Click(object sender, EventArgs e)
+        {
+           //Selection of the stock
+            Select_devise stocks = new Select_devise(this);
+            
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+                        
+             
+        }
+
+        private void load_hist_data_Click(object sender, EventArgs e)
+        {
+            
+            
+            System.Windows.Forms.ToolTip ToolTipName = new System.Windows.Forms.ToolTip();
+            OpenFileDialog hist = new OpenFileDialog();
+            hist.ShowDialog();
+            name_file = hist.SafeFileName;
+            
+            file_name.Text = "Selected file : \n" + name_file;
+      
+            if (file_name.Width > 133)
+            {
+
+                String name_cut = name_file.Substring(0, Math.Min(name_file.Length, 10));
+                file_name.Text = "Selected file : \n" + name_cut + "...";
+            }
+            ToolTipName.SetToolTip(this.file_name, name_file);
+
+            file_name.ForeColor = System.Drawing.Color.Green;
+
+            DateTime starttime = DateTime.Now;
+
+            xlApp = new Excel.Application();
+            xlWorkbook = xlApp.Workbooks.Open(hist.FileName);
+            Excel.Worksheet xlSheet = (Excel.Worksheet)xlWorkbook.Sheets[1]; // get first sheet
+            Excel.Range xlRange = xlSheet.UsedRange; // get the entire used range
+            ifopenedexcel = true;
+
+            int numberOfRows = xlRange.Rows.Count;
+            int numberOfCols = xlRange.Columns.Count;
+
+            List<int> columnsToRead = new List<int>();
+            // find the columns that correspond with the string columnName which
+            // would be passed into your method
+            for (int i = 1; i <= numberOfCols; i++)
+            {
+              
+                if (xlRange.Cells[1, i] != null) // ADDED IN EDIT
+                {
+                    if (i == 3)
+                    {
+                        columnsToRead.Add(i);
+                    }
+                }
+            }
+
+
+            //try{
+
+            List<String> columnValue = new List<String>();
+            List<String> date = new List<String>();
+            List<String> heure = new List<String>();
+            List<String> closev = new List<String>();
+            
+            TimeSpan tempsecoule;
+
+            // loop over each column number and add results to the list
+            foreach (int c in columnsToRead)
+            {
+                // start at 2 because the first row is 1 and the header row
+                for (int r = 2; r <= numberOfRows; r++)
+                {
+
+                    if (xlRange.Cells[r, c] != null) // ADDED IN EDIT
+                    {
+                        float rf = r;
+                        float cf = numberOfRows;
+                        
+                        //refreshing the loading
+                        
+                        tempsecoule = DateTime.Now - (starttime);
+                        time.Text = "Time spent :\n" + tempsecoule.ToString();
+
+                        //Loading close values
+                        if (c == 3)
+                        {
+
+                            String annee = ((String)(xlRange.Cells[r, c - 2] as Excel.Range).Value.ToString())[0].ToString() +
+                               ((String)(xlRange.Cells[r, c - 2] as Excel.Range).Value.ToString())[1].ToString() +
+                               ((String)(xlRange.Cells[r, c - 2] as Excel.Range).Value.ToString())[2].ToString() +
+                               ((String)(xlRange.Cells[r, c - 2] as Excel.Range).Value.ToString())[3].ToString();
+
+                            String mois = ((String)(xlRange.Cells[r, c - 2] as Excel.Range).Value.ToString())[4].ToString() +
+                                            ((String)(xlRange.Cells[r, c - 2] as Excel.Range).Value.ToString())[5].ToString();
+
+                            String jour = ((String)(xlRange.Cells[r, c - 2] as Excel.Range).Value.ToString())[6].ToString() +
+                                            ((String)(xlRange.Cells[r, c - 2] as Excel.Range).Value.ToString())[7].ToString();
+
+
+                            DateTime wtftesst = ParseExcelDate(((String)(xlRange.Cells[r, c - 1] as Excel.Range).Value.ToString()));
+
+                            DateTime wtf = new DateTime(int.Parse(annee), int.Parse(mois), int.Parse(jour), wtftesst.Hour, wtftesst.Minute, wtftesst.Second);
+
+                            Double closevalue = Double.Parse((String)(xlRange.Cells[r, c] as Excel.Range).Value.ToString(), System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
+
+                            loadtime.Text = "Loading : " + ((rf / cf * 100)).ToString("00.000") + "%";
+
+                            loaded_data.Add(new Data(closevalue, wtf));
+                            /*loaded_data[r - 2].datehour = wtf;
+                            loaded_data[r - 2].close = closevalue;*/
+                            
+
+                        }
+                    }
+                }
+            }
+
+
+
+            
+
+
+            load_xml_button.Enabled = false;
+            
+        }
+
+        private void sel_pattern_Click(object sender, EventArgs e)
+        {
+
+            //Graphique graph = new Graphique(loaded_data);
+            testgraph = new graph_form(loaded_data, min_data_value, max_data_value);
+
+            stat = new statistiques(testgraph);
+            stat.Visible = true;
+            button6.Enabled = true;
+            
+        }
+
+        private void exit_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+ 
+        }
+
+        private void load_data_live_Click(object sender, EventArgs e)
+        {
+            //sel_pattern.Enabled = true;
+            OpenFileDialog hist = new OpenFileDialog();
+            hist.ShowDialog();
+            name_file = hist.SafeFileName;
+ 
+            file_name.Text = "Selected file : \n" + name_file;
+            file_name.ForeColor = System.Drawing.Color.Green;
+
+            DateTime starttime = DateTime.Now;
+
+            xlApp = new Excel.Application();
+            xlWorkbook = xlApp.Workbooks.Open(hist.FileName);
+            xlSheet = (Excel.Worksheet)xlWorkbook.Sheets[1]; // get first sheet
+            xlRange = xlSheet.UsedRange; // get the entire used range
+            ifopenedexcel = true;
+
+            int numberOfRows = xlRange.Rows.Count;
+            int numberOfCols = xlRange.Columns.Count;
+
+            Double closevaluez = Double.Parse((String)(xlRange.Cells[17, 2] as Excel.Range).Value.ToString(), System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
+            Double closevalue2z = Double.Parse((String)(xlRange.Cells[17, 3] as Excel.Range).Value.ToString(), System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
+
+            loaded_data.Add(new Data(closevaluez, DateTime.Now));
+
+            graph_live = new graph_form(loaded_data, 1, 1.5);
+            stat = new statistiques(graph_live);
+            stat.Visible = true;
+
+            DateTime tempsecoule;
+
+            tempsecoule = DateTime.Now;
+
+            myTimer.Tick += new EventHandler(TimerEventProcessor);
+            myTimer.Tick += this.timer_Tick;
+            
+
+            // Sets the timer interval to x ms.
+            myTimer.Interval = 60000;
+            myTimer.Start();
+
+            // Runs the timer, and raises the event. 
+            while (exitFlag == false)
+            {
+                // Processes all the events in the queue.
+                Application.DoEvents();
+            }
+
+            
+        }
+
+        private void create_pattern_Click(object sender, EventArgs e)
+        {
+            Create_pattern a = new Create_pattern(this);
+            a.ShowDialog();
+            matriceUser = a.getListWeight();
+            typeofpattern = a.get_type();
+
+        }
+
+        private void run_detection_Click(object sender, EventArgs e)
+        {
+            
+            detection detect = new detection(this.testgraph,this.loaded_data);
+            patternsDetected = detect.runDetection(0, 24, this.matriceUser, this.typeofpattern);
+            testgraph.button_next_pattern.Visible = true;
+            testgraph.button_previous_patt.Visible = true;
+
+            if (patternsDetected.Count == 0)
+            {
+                this.label_patdet.Text = "No pattern detected";
+            }
+
+            else
+            {
+                this.label_patdet.Text = patternsDetected.Count.ToString() + " patterns detected !";
+            }
+
+            int nb_hands3_5 = 0;
+            int nb_hands5_7 = 0;
+            int nb_hands7_10 = 0;
+
+            for (int i = 0; i < patternsDetected.Count; i++)
+            {
+                if (patternsDetected[i].type == typeofpattern)
+                {
+                    if (patternsDetected[i].sum >= 3 && patternsDetected[i].sum < 5)
+                    {
+                        nb_hands3_5++;
+                    }
+                    if (patternsDetected[i].sum >= 5 && patternsDetected[i].sum < 7)
+                    {
+                        nb_hands5_7++;
+                    }
+                    if (patternsDetected[i].sum >= 7 && patternsDetected[i].sum <= 10)
+                    {
+                        nb_hands7_10++;
+                    }
+                }
+            }
+
+            stat.addPattern(typeofpattern, nb_hands3_5, 1);
+            stat.addPattern(typeofpattern, nb_hands5_7, 2);
+            stat.addPattern(typeofpattern, nb_hands7_10, 3);
+            stat.addPattern(typeofpattern, nb_hands3_5 + nb_hands5_7 + nb_hands7_10, 4);
+
+            
+            
+        }
+        private void timer_Tick(object sender, EventArgs e)
+        {
+            //run_detection_live();
+        }
+        private void run_detection_live()
+        {
+            detection detect = new detection(this.testgraph, this.loaded_data);
+            //detect.runDetection(detect.listOfDatas.Count - 10);
+        }
+
+        private void groupBox1_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        public void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        public Label get_stock_label()
+        {
+            return label2;
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void load_xml_button_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog xml = new OpenFileDialog();
+            xml.ShowDialog();
+            name_file = xml.SafeFileName;
+
+            DateTime starttime = DateTime.Now;
+            TimeSpan tempsecoule = DateTime.Now - (starttime);
+            starttime = DateTime.Now;
+            tempsecoule = DateTime.Now - (starttime);
+
+
+            file_name.Text = "Selected file : \n" + name_file;
+
+            System.Windows.Forms.ToolTip ToolTipName = new System.Windows.Forms.ToolTip();
+            if (file_name.Width > 133)
+            {
+
+                String name_cut = name_file.Substring(0, Math.Min(name_file.Length, 10));
+                file_name.Text = "Selected file : \n" + name_cut + "...";
+            }
+            ToolTipName.SetToolTip(this.file_name, name_file);
+            file_name.ForeColor = System.Drawing.Color.Green;
+
+            //DESERIALIZATION
+
+            XmlSerializer xs = new XmlSerializer(typeof(List<Data>));;
+            using (StreamReader rd = new StreamReader(name_file))
+            {
+                loaded_data = xs.Deserialize(rd) as List<Data>;
+            }
+
+            tempsecoule = DateTime.Now - (starttime);
+            time.Text = "Time spent :\n" + tempsecoule.ToString();
+
+            hist_data_button.Enabled = false;
+            sel_pattern.Enabled = true;
+            load_data_live.Enabled = false;
+    
+            for(int i = 0; i<loaded_data.Count; i++ ){
+
+                if (min_data_value > loaded_data[i].close)
+                {
+                    min_data_value = loaded_data[i].close;
+                }
+
+                if (max_data_value < loaded_data[i].close)
+                {
+                    max_data_value = loaded_data[i].close;
+                }
+
+            }
+            
+           
+            
+        }
+
+        private void save_xml_button_Click(object sender, EventArgs e)
+        {
+
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+            saveFileDialog1.Filter = "XML File|*.xml";
+            saveFileDialog1.Title = "Save XML file";
+            saveFileDialog1.ShowDialog();
+
+            //SERIALIZATION
+            if (saveFileDialog1.FileName != "")
+            {
+               
+                
+                XmlSerializer xs = new XmlSerializer(typeof(List<Data>));
+                using (StreamWriter wr = new StreamWriter(saveFileDialog1.FileName))
+                {
+                    xs.Serialize(wr, loaded_data);
+                }
+            }
+        }
+
+
+        public static DateTime ParseExcelDate(string date)
+        {
+            DateTime dt;
+            if (DateTime.TryParse(date, out dt))
+            {
+                return dt;
+            }
+
+            double oaDate;
+            if (double.TryParse(date, out oaDate))
+            {
+                return DateTime.FromOADate(oaDate);
+            }
+
+            return DateTime.MinValue;
+        }
+
+        private void label_valeurs_live_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (ifopenedexcel == true)
+            {
+                xlWorkbook.Close(0);
+                xlApp.Quit();
+            }
+            Application.Exit();
+        }
+
+    }
+}

@@ -1,0 +1,14 @@
+C:\Users\Robee\Documents\Visual Studio 2012\Projects\PPE_ChartPatternFinal\WindowsFormsApplication1\bin\Release\WindowsFormsApplication1.exe
+C:\Users\Robee\Documents\Visual Studio 2012\Projects\PPE_ChartPatternFinal\WindowsFormsApplication1\bin\Release\WindowsFormsApplication1.pdb
+C:\Users\Robee\Documents\Visual Studio 2012\Projects\PPE_ChartPatternFinal\WindowsFormsApplication1\obj\Release\PPE_PROGRAM.csproj.ResolveComReference.cache
+C:\Users\Robee\Documents\Visual Studio 2012\Projects\PPE_ChartPatternFinal\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Create_pattern.resources
+C:\Users\Robee\Documents\Visual Studio 2012\Projects\PPE_ChartPatternFinal\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Form1.resources
+C:\Users\Robee\Documents\Visual Studio 2012\Projects\PPE_ChartPatternFinal\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Graphique.resources
+C:\Users\Robee\Documents\Visual Studio 2012\Projects\PPE_ChartPatternFinal\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.graph_form.resources
+C:\Users\Robee\Documents\Visual Studio 2012\Projects\PPE_ChartPatternFinal\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Load_historical_data.resources
+C:\Users\Robee\Documents\Visual Studio 2012\Projects\PPE_ChartPatternFinal\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Select_devise.resources
+C:\Users\Robee\Documents\Visual Studio 2012\Projects\PPE_ChartPatternFinal\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Properties.Resources.resources
+C:\Users\Robee\Documents\Visual Studio 2012\Projects\PPE_ChartPatternFinal\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.statistiques.resources
+C:\Users\Robee\Documents\Visual Studio 2012\Projects\PPE_ChartPatternFinal\WindowsFormsApplication1\obj\Release\PPE_PROGRAM.csproj.GenerateResource.Cache
+C:\Users\Robee\Documents\Visual Studio 2012\Projects\PPE_ChartPatternFinal\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.exe
+C:\Users\Robee\Documents\Visual Studio 2012\Projects\PPE_ChartPatternFinal\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.pdb

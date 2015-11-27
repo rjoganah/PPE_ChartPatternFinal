@@ -1,0 +1,358 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
+
+
+namespace WindowsFormsApplication1
+{
+    public partial class graph_form : Form
+    {
+        public int pattern_courant;
+        public Series series1;
+        public Chart Chart2;
+        public ChartArea ChartArea1;
+        List<Data> loadedData = new List<Data>();
+
+
+        public graph_form(List<Data> loadedData, double min, double max)
+        {
+
+            this.loadedData = loadedData;
+            pattern_courant = 0;
+            InitializeComponent();
+
+            //this.Visible = true;
+            //Créer un Chart
+            Chart2 = new Chart();
+
+            //Créer ChartArea (zone graphique)
+            ChartArea1 = new ChartArea();
+
+            //Ajouter le  Chart Area à la Collection ChartAreas du  Chart
+            Chart2.ChartAreas.Add(ChartArea1);
+
+            //Créer deux  data series (qui contiendront les DataPoint)
+            series1 = new Series();
+
+            //Ajouter des points à la collections Points de la première series
+            foreach (Data index in loadedData)
+            {
+                series1.Points.AddXY(index.datehour, index.close);
+            }
+
+            series1.BorderWidth = 3;
+            //series1.BorderColor = Color.OrangeRed;
+            series1.Color = Color.Blue;
+            series1.ChartType = SeriesChartType.Line;
+
+            series1.MarkerStyle = MarkerStyle.Circle;
+            series1.MarkerColor = Color.OrangeRed;
+            //On indique d'afficher ces Series sur le ChartArea1
+            series1.ChartArea = "ChartArea1";
+
+            //Setting the serie
+            Chart2.Series.Clear();
+            Chart2.Series.Add(series1);
+            Chart2.Series[0].XValueType = ChartValueType.DateTime;
+
+            //Setting the AxisX parameters
+            Chart2.ChartAreas[0].AxisX.LabelStyle.Format = "yyyy-MM-dd/HH-mm-ss";
+            
+            //
+            
+
+            if (loadedData.Count > 1)
+            {
+                Chart2.ChartAreas[0].AxisX.Interval = 0;
+                Chart2.ChartAreas[0].AxisX.Minimum = loadedData[0].datehour.ToOADate();
+                Chart2.ChartAreas[0].AxisX.Maximum = loadedData[loadedData.Count - 1].datehour.ToOADate();
+                Chart2.ChartAreas[0].AxisX.ScaleView.Size = 50;
+            }
+
+            else
+            {
+                this.button1.Enabled = false;
+                this.button2.Enabled = false;
+                Chart2.ChartAreas[0].AxisX.ScaleView.SmallScrollSizeType = DateTimeIntervalType.Minutes;
+                Chart2.ChartAreas[0].AxisX.Interval = 1;
+                Chart2.ChartAreas[0].AxisX.Minimum = loadedData[0].datehour.ToOADate();
+                Chart2.ChartAreas[0].AxisX.Maximum = loadedData[loadedData.Count - 1].datehour.ToOADate();
+                Chart2.ChartAreas[0].AxisX.ScaleView.SizeType = DateTimeIntervalType.Minutes;
+                Chart2.ChartAreas[0].AxisX.ScaleView.Size = 5;
+
+            }
+            //Setting the ScaleView parameters
+            //Chart2.ChartAreas[0].AxisX.ScaleView.Zoomable = true;
+            //Chart2.ChartAreas[0].AxisX.ScaleView.SizeType = DateTimeIntervalType.Years;
+            
+            Chart2.ChartAreas[0].AxisX.ScrollBar.IsPositionedInside = false;
+            
+            //Chart2.ChartAreas[0].AxisX.IntervalType = (DateTimeIntervalType)IntervalType.Months;
+
+            Chart2.ChartAreas[0].AxisX.Title = "Date";
+            Chart2.ChartAreas[0].AxisY.Title = "EUR/USD";
+            
+
+            //Chart2.ChartAreas[0].AxisX.ScaleView.SmallScrollSizeType = DateTimeIntervalType.Hours;
+            //Chart2.ChartAreas[0].AxisX.ScaleView.SmallScrollSize = 1;
+
+
+            Chart2.ChartAreas[0].AxisX.ScrollBar.Enabled = true;
+
+            Chart2.ChartAreas[0].AxisX.ScrollBar.ButtonStyle = ScrollBarButtonStyles.SmallScroll;
+
+            //Chart2.ChartAreas[0].AxisX.ScaleView.MinSizeType = DateTimeIntervalType.Hours;
+            //Chart2.ChartAreas[0].AxisX.ScaleView.MinSize = 1;
+
+            //Chart2.ChartAreas[0].AxisX.ScaleView.SmallScrollSizeType = DateTimeIntervalType.Hours;
+            //Chart2.ChartAreas[0].AxisX.ScaleView.SmallScrollSize = 12;
+            //Chart2.ChartAreas[0].AxisX.ScaleView.SmallScrollMinSizeType = DateTimeIntervalType.Hours;
+            //Chart2.ChartAreas[0].AxisX.ScaleView.SmallScrollMinSize = 1;
+
+
+            //AXE ORDONNEE
+            Chart2.ChartAreas[0].AxisY.Minimum = min - 0.03;
+            Chart2.ChartAreas[0].AxisY.Maximum = max + 0.03;
+
+
+
+            // Dimensionner le Chart, couleur de fond
+            Chart2.Size = panel_chart.Size;
+            Color clr = Color.FromArgb(101, 204, 104);
+            Chart2.BackColor = clr;
+
+            /*Chart2.ChartAreas[0].CursorX.IsUserEnabled = true;
+            Chart2.ChartAreas[0].CursorX.IsUserSelectionEnabled = true;
+            Chart2.ChartAreas[0].CursorY.IsUserEnabled = true;
+            Chart2.ChartAreas[0].CursorY.IsUserSelectionEnabled = true;*/
+            //Chart2.ChartAreas[0].AxisX.PixelPositionToValue(50);
+            //Chart2.ChartAreas[0].AxisX.PixelPositionToValue(100);
+            panel_chart.Controls.Add(Chart2);
+
+        }
+
+        public void set_patt_type(String type)
+        {
+            
+        }
+
+        private void panel_chart_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        public void Graphique_refresh(List<Data> loaded_data, int time)
+        {
+            Chart2.Series[0].Points.AddXY(loaded_data[loaded_data.Count - 1].datehour, loaded_data[loaded_data.Count - 1].close);
+            this.labeltime.Text = time.ToString();
+            Chart2.ChartAreas[0].AxisX.ScaleView.SmallScrollSizeType = DateTimeIntervalType.Minutes;
+            Chart2.ChartAreas[0].AxisX.Interval = 0;
+            
+            Chart2.ChartAreas[0].AxisX.Minimum = loadedData[0].datehour.ToOADate();
+            Chart2.ChartAreas[0].AxisX.Maximum = loadedData[loadedData.Count - 1].datehour.ToOADate();
+            Chart2.ChartAreas[0].AxisX.ScaleView.SizeType = DateTimeIntervalType.Minutes;
+            Chart2.ChartAreas[0].AxisX.ScaleView.Size = 5;
+            //Chart2.ChartAreas[0].AxisX.ScaleView.Size = loaded_data.Count / 60;
+        }
+
+        public void color_interval(int indexDebut, int indexFin)
+        {
+            for (int i = indexDebut; i < indexFin + 1; i++)
+            {
+                Chart2.Series[0].Points[i].Color = Color.Green;
+
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Chart2.ChartAreas[0].AxisX.ScaleView.Size *= trackBarDezoom.Value;
+            Chart2.ChartAreas[0].AxisX.Interval *= trackBarDezoom.Value;
+            Chart2.ChartAreas[0].AxisX.ScaleView.SizeType = DateTimeIntervalType.Hours;
+            double min = Chart2.ChartAreas[0].AxisX.Minimum;
+            double max = Chart2.ChartAreas[0].AxisX.Maximum;
+            int count = loadedData.Count;
+            double pas = (max - min) / (count);
+            double valueMin = 100;
+            double valueMax = 0;
+            int value;
+            double loadedValue;
+            double j = Chart2.ChartAreas[0].AxisX.ScaleView.ViewMinimum;
+            for (DateTime i = DateTime.FromOADate(Chart2.ChartAreas[0].AxisX.ScaleView.ViewMinimum); i < DateTime.FromOADate(Chart2.ChartAreas[0].AxisX.ScaleView.ViewMaximum); i = i.AddHours(1))
+            {
+                value = (int)Math.Round(((i.ToOADate() - min) / pas));
+                if (value < count - 1)
+                {
+                    loadedValue = loadedData[value].close;
+                }
+                else
+                {
+                    loadedValue = loadedData[count - 1].close;
+                }
+                if (i.Equals(j))
+                {
+                    valueMax = loadedValue;
+                    valueMin = loadedValue;
+                }
+                if (valueMax < loadedValue)
+                {
+                    valueMax = loadedValue;
+                }
+                if (valueMin > loadedValue)
+                {
+                    valueMin = loadedValue;
+                }
+            }
+           
+            Chart2.ChartAreas[0].AxisY.Minimum = valueMin - 0.02;
+            Chart2.ChartAreas[0].AxisY.Maximum = valueMax + 0.02;
+ }
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            /*Chart2.ChartAreas[0].AxisX.ScaleView.Size /= trackBarZoom.Value;
+            Chart2.ChartAreas[0].AxisX.Interval /= trackBarZoom.Value;
+            Chart2.ChartAreas[0].AxisX.ScaleView.SizeType = DateTimeIntervalType.Days;*/
+
+            //Chart2.ChartAreas[0].AxisX.ScaleView.Zoom(myStartDate.ToOADate(), 10, DateTimeIntervalType.Hours, true);
+
+
+            Chart2.ChartAreas[0].AxisX.ScaleView.Zoom(Chart2.ChartAreas[0].AxisX.ScaleView.ViewMinimum, Chart2.ChartAreas[0].AxisX.ScaleView.Size / 2, DateTimeIntervalType.Hours, true);
+
+
+            
+
+
+            List<double> listzoom = new List<double>();
+
+           // MessageBox.Show(DateTime.FromOADate(Chart2.ChartAreas[0].AxisX.ScaleView.ViewMinimum).ToString() + " + " + DateTime.FromOADate(Chart2.ChartAreas[0].AxisX.ScaleView.ViewMaximum).ToString());
+
+            double min = Chart2.ChartAreas[0].AxisX.Minimum;
+            double max = Chart2.ChartAreas[0].AxisX.Maximum;
+            int count = loadedData.Count;
+            double pas = (max - min) / (count);
+            //MessageBox.Show("max : " + max.ToString() + "\n" + "min :"+ min.ToString() + "\n" + "count : " + count.ToString() + "\n pas :" + pas.ToString() );
+            double valueMin=100;
+            double valueMax = 0;
+            double j = Chart2.ChartAreas[0].AxisX.ScaleView.ViewMinimum;
+            //MessageBox.Show(DateTime.FromOADate(Chart2.ChartAreas[0].AxisX.ScaleView.ViewMinimum).ToString());
+            for (DateTime i = DateTime.FromOADate(Chart2.ChartAreas[0].AxisX.ScaleView.ViewMinimum); i < DateTime.FromOADate(Chart2.ChartAreas[0].AxisX.ScaleView.ViewMaximum); i = i.AddHours(1))
+            {
+                //MessageBox.Show(loadedData[(int)((i.ToOADate() - min)/pas)].close.ToString() + "\n" + ((i.ToOADate() - min)/pas).ToString() + "\n" + i.ToOADate().ToString() + "\n" + i.ToString());
+                //MessageBox.Show(loadedData[Convert.ToInt32(j)].datehour.ToString());
+
+                if (i.Equals(j))
+                {
+                    valueMax = (loadedData[(int)Math.Round(((i.ToOADate() - min) / pas))].close);
+                    valueMin = (loadedData[(int)Math.Round(((i.ToOADate() - min) / pas))].close);
+                }
+                if (valueMax < (loadedData[(int)Math.Round(((i.ToOADate() - min) / pas))].close))
+                {
+                    valueMax = (loadedData[(int)Math.Round(((i.ToOADate() - min) / pas))].close);
+                }
+                if (valueMin > (loadedData[(int)Math.Round(((i.ToOADate() - min) / pas))].close))
+                {
+                    valueMin = (loadedData[(int)Math.Round(((i.ToOADate() - min) / pas))].close);
+                }
+                
+            }
+
+
+            //Chart2.ChartAreas[0].AxisX.Interval = 0;
+            //Chart2.ChartAreas[0].AxisY.Minimum = Convert.ToDouble(listzoom.Min());
+            
+            Chart2.ChartAreas[0].AxisY.Minimum = valueMin - 0.02;
+            Chart2.ChartAreas[0].AxisY.Maximum = valueMax + 0.02;
+            //MessageBox.Show(Chart2.ChartAreas[0].AxisX.Minimum.ToString() + " + " + listzoom.Max().ToString() + " + " + listzoom.Min().ToString());
+            //Chart2.ChartAreas[0].AxisY.Maximum = Convert.ToDouble(listzoom.Max());
+           // MessageBox.Show(Chart2.ChartAreas[0].AxisX.ScaleView.Position.ToString());
+
+            
+
+        }
+
+        private void trackBarZoom_MouseCaptureChanged(object sender, EventArgs e)
+        {
+            labelzoom.Text = "x" + this.trackBarZoom.Value.ToString();
+        }
+
+        private void trackBarDezoom_MouseCaptureChanged(object sender, EventArgs e)
+        {
+            labeldezoom.Text = "x" + this.trackBarDezoom.Value.ToString();
+        }
+
+        private void trackBarDezoom_Scroll(object sender, EventArgs e)
+        {
+
+        }
+
+        private void labeldezoom_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button_next_pattern_Click(object sender, EventArgs e)
+        {
+            if (Form1.patternsDetected.Count == 0)
+            {
+                label1.Text = "No pattern detected";
+                return;
+            }
+            if (pattern_courant == Form1.patternsDetected.Count - 1) { pattern_courant = 0; }
+            else { pattern_courant++; }
+            label1.Text = "Patterns : \n " + ((pattern_courant + 1).ToString() + "/" + Form1.patternsDetected.Count.ToString());
+
+            DateTime myStartDate = Form1.patternsDetected[pattern_courant].dateDebut;
+            DateTime myEndDate = Form1.patternsDetected[pattern_courant].dateFin;
+            label_patt_type.Text = Form1.patternsDetected[pattern_courant].type;
+
+            Chart2.ChartAreas[0].AxisX.ScaleView.Zoom(myStartDate.ToOADate(), Form1.patternsDetected[pattern_courant].size,
+                DateTimeIntervalType.Hours, true);
+            //Chart2.ChartAreas[0].AxisX.Interval = 0;
+            Chart2.ChartAreas[0].AxisY.Minimum = Form1.patternsDetected[pattern_courant].minValue;
+            Chart2.ChartAreas[0].AxisY.Maximum = Form1.patternsDetected[pattern_courant].maxValue;
+
+        }
+
+        private void button_previous_patt_Click(object sender, EventArgs e)
+        {
+            if (Form1.patternsDetected.Count == 0)
+            {
+                label1.Text = "No pattern detected";
+                return;
+            }
+            if (pattern_courant == 0) { pattern_courant = Form1.patternsDetected.Count - 1; }
+            else { pattern_courant--; }
+            label1.Text = "Patterns : \n " + ((pattern_courant+1).ToString() + "/" + Form1.patternsDetected.Count.ToString());
+
+            label_patt_type.Text = Form1.patternsDetected[pattern_courant].type;
+            DateTime myStartDate = Form1.patternsDetected[pattern_courant].dateDebut;
+            DateTime myEndDate = Form1.patternsDetected[pattern_courant].dateFin;
+            Chart2.ChartAreas[0].AxisX.ScaleView.Zoom(myStartDate.ToOADate(), Form1.patternsDetected[pattern_courant].size, DateTimeIntervalType.Hours, true);
+            Chart2.ChartAreas[0].AxisX.Interval = 0;
+            Chart2.ChartAreas[0].AxisY.Minimum = Form1.patternsDetected[pattern_courant].minValue;
+            Chart2.ChartAreas[0].AxisY.Maximum = Form1.patternsDetected[pattern_courant].maxValue;
+
+            
+
+            
+        }
+
+        private void graph_form_Load(object sender, EventArgs e)
+        {
+
+        }
+
+    }
+}

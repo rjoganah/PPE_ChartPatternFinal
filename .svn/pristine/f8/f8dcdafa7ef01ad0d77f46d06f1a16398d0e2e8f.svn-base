@@ -1,0 +1,49 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+
+namespace WindowsFormsApplication1
+{
+    public partial class Select_devise : Form
+    {
+
+        Form1 fenetre_principale;
+        public Select_devise(Form1 form)
+        {
+            InitializeComponent();
+            this.Visible = true;
+            comboBox1.Items.Add("EUR/ USD");
+            comboBox1.Items.Add("CHF / GBP");
+            comboBox1.Items.Add("TEST / TEST");
+            fenetre_principale = form;
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void OK_Click(object sender, EventArgs e)
+        {
+            CurrencyPair currpair = new CurrencyPair(comboBox1.Text);
+            fenetre_principale.label2.Text="Selected pair : \n" + comboBox1.Text;
+            fenetre_principale.label2.ForeColor = System.Drawing.Color.Green;
+            this.Close();
+            fenetre_principale.hist_data_button.Enabled = true;
+            fenetre_principale.save_xml_button.Enabled = true;
+            fenetre_principale.load_xml_button.Enabled = true;
+            fenetre_principale.load_data_live.Enabled = true;
+            
+        }
+
+        private void comboBox1_Initialize(object sender, EventArgs e)
+        {
+
+        }
+    }
+}
